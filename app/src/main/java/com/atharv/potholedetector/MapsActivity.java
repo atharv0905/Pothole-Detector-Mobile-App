@@ -17,6 +17,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -29,6 +30,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     Button currentLocationBtn;
+    Marker marker;
 
     // --------------------------------------------------------------------------------------------------------------------------
     // setting marking to current location
@@ -60,10 +62,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             LatLng latLng = new LatLng(latitude, longitude);
 
             // creating marker object
-            MarkerOptions marker = new MarkerOptions().position(latLng).title("My Current Location");
+            MarkerOptions newMarker = new MarkerOptions();
+            newMarker.position(latLng);
+            marker = mMap.addMarker(newMarker);
+//            marker.position(latLng);
 
             // adding marker to map
-            mMap.addMarker(marker);
+//            mMap.addMarker(marker);
 
             // moving camera to desired latlng
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
@@ -76,11 +81,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     // setting marking to current location
     // --------------------------------------------------------------------------------------------------------------------------
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
 
+
+    // --------------------------------------------------------------------------------------------------------------------------
+    // search location
+    private void searchLocation(){
         // Initialize Places.
         Places.initialize(getApplicationContext(), "AIzaSyADAtPLIQGT-jFe81VVgJIyb0UBi4nR7so");
 
@@ -89,14 +94,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 getSupportFragmentManager().findFragmentById(R.id.searchBar);
 
         // Specify the types of place data to return.
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG));
 
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 // Handle the selected place.
-                Toast.makeText(MapsActivity.this, "Place: " + place.getName() + ", " + place.getId(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MapsActivity.this, "Place: " + place.getName(), Toast.LENGTH_LONG).show();
+
+                LatLng selectedLatLng = place.getLatLng();
+                if(selectedLatLng == null){
+                    Toast.makeText(MapsActivity.this, "Lat Lng is null", Toast.LENGTH_LONG).show();
+                }
+                if (selectedLatLng != null) {
+                    MarkerOptions newMarker = new MarkerOptions();
+                    newMarker.position(selectedLatLng);
+                    marker = mMap.addMarker(newMarker);
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLatLng, 15));
+                }
             }
 
             @Override
@@ -105,6 +121,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MapsActivity.this, "" + status, Toast.LENGTH_LONG).show();
             }
         });
+    }
+    // search location
+    // --------------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
+
+//        marker = new Marker();
+        // searching location
+        searchLocation();
 
         // finding map by fragment id
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gmap);
