@@ -32,6 +32,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button currentLocationBtn;
 
     private Marker selectedMarker;
+    private Marker currentLocationMarker;
 
     // --------------------------------------------------------------------------------------------------------------------------
     // setting marking to current location
@@ -48,12 +49,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     LOCATION_PERMISSION_REQUEST_CODE);
         } else {
             // If permission is granted, fetch the location
-            goToCurrentLocation();
+            goToCurrentLocation(18);
         }
     }
     // check for permission and fetch location
 
-    private void goToCurrentLocation() {
+    private void goToCurrentLocation(float zoomLevel) {
         GPSTracker gpsTracker = new GPSTracker(MapsActivity.this);
         if (gpsTracker.canGetLocation()) {
             double latitude = gpsTracker.getLatitude();
@@ -62,18 +63,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // creating latlng object
             LatLng latLng = new LatLng(latitude, longitude);
 
-            // creating marker object
-            MarkerOptions newMarker = new MarkerOptions();
-            newMarker.position(latLng);
+            if(currentLocationMarker == null){
+                // creating marker object
+                MarkerOptions newMarker = new MarkerOptions();
+                newMarker.position(latLng);
 
-            // adding marker to map
-            mMap.addMarker(newMarker);
-
+                currentLocationMarker = mMap.addMarker(newMarker);
+            }else {
+                currentLocationMarker.setPosition(latLng);
+            }
             // moving camera to desired latlng
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
             // zoom camera to desired latlng
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
         } else {
             gpsTracker.showSettingsAlert();
         }
@@ -100,8 +103,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onPlaceSelected(Place place) {
                 // Handle the selected place.
-//            Toast.makeText(MapsActivity.this, "Place: " + place.getName(), Toast.LENGTH_LONG).show();
-
                 LatLng selectedLatLng = place.getLatLng();
                 if(selectedLatLng == null){
                     Toast.makeText(MapsActivity.this, "Lat Lng is null", Toast.LENGTH_LONG).show();
@@ -126,6 +127,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(MapsActivity.this, "" + status, Toast.LENGTH_LONG).show();
             }
         });
+
+        // Set up a OnMapClickListener to handle clicks on the map
+        if(mMap != null){
+            mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                @Override
+                public void onMapClick(LatLng latLng) {
+                    // When the map is clicked, add a marker at the clicked position
+                    if (selectedMarker == null) {
+                        // If no marker exists, create a new one
+                        MarkerOptions newMarker = new MarkerOptions();
+                        newMarker.position(latLng);
+                        selectedMarker = mMap.addMarker(newMarker);
+                    } else {
+                        // If marker exists, move it to the new location
+                        selectedMarker.setPosition(latLng);
+                    }
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                }
+            });
+        }
+
     }
     // search location
     // --------------------------------------------------------------------------------------------------------------------------
@@ -134,9 +156,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
-        // searching location
-        searchLocation();
 
         // finding map by fragment id
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.gmap);
@@ -154,8 +173,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override // all map related functionalities will be done here
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        LatLng mapOpenLatLng = new LatLng(19.076090, 72.877426);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(mapOpenLatLng));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mapOpenLatLng, 12f));
+
+        // search bar enabled
+        searchLocation();
+
+        // open map on current location
+        goToCurrentLocation(13);
     }
 }
