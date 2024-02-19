@@ -34,6 +34,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker selectedMarker;
     private Marker currentLocationMarker;
 
+    private LatLng selectedLatLng;
+
+    private LatLng userCurrentLatLng;
+
     // --------------------------------------------------------------------------------------------------------------------------
     // setting marking to current location
     private final int LOCATION_PERMISSION_REQUEST_CODE = 300;
@@ -61,22 +65,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             double longitude = gpsTracker.getLongitude();
 
             // creating latlng object
-            LatLng latLng = new LatLng(latitude, longitude);
+            userCurrentLatLng = new LatLng(latitude, longitude);
 
             if(currentLocationMarker == null){
                 // creating marker object
                 MarkerOptions newMarker = new MarkerOptions();
-                newMarker.position(latLng);
+                newMarker.position(userCurrentLatLng);
 
                 currentLocationMarker = mMap.addMarker(newMarker);
             }else {
-                currentLocationMarker.setPosition(latLng);
+                currentLocationMarker.setPosition(userCurrentLatLng);
             }
             // moving camera to desired latlng
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(userCurrentLatLng));
 
             // zoom camera to desired latlng
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userCurrentLatLng, zoomLevel));
         } else {
             gpsTracker.showSettingsAlert();
         }
@@ -103,7 +107,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onPlaceSelected(Place place) {
                 // Handle the selected place.
-                LatLng selectedLatLng = place.getLatLng();
+                selectedLatLng = place.getLatLng();
                 if(selectedLatLng == null){
                     Toast.makeText(MapsActivity.this, "Lat Lng is null", Toast.LENGTH_LONG).show();
                 }
@@ -117,7 +121,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         // If marker exists, move it to the new location
                         selectedMarker.setPosition(selectedLatLng);
                     }
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLatLng, 15));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLatLng, 13));
                 }
             }
 
@@ -143,7 +147,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         // If marker exists, move it to the new location
                         selectedMarker.setPosition(latLng);
                     }
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
                 }
             });
         }
