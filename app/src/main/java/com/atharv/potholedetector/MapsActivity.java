@@ -1,7 +1,12 @@
 package com.atharv.potholedetector;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
 
+
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -20,6 +25,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // --------------------------------------------------------------------------------------------------------------------------
     // setting marking to current location
+    private final int LOCATION_PERMISSION_REQUEST_CODE = 300;
+
+    // check for permission and fetch location
+    private void fetchLocation(){
+        // Check if the app has location permission
+        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // If permission is not granted, request it from the user
+            ActivityCompat.requestPermissions(MapsActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            // If permission is granted, fetch the location
+            goToCurrentLocation();
+        }
+    }
+    // check for permission and fetch location
+
     private void goToCurrentLocation() {
         GPSTracker gpsTracker = new GPSTracker(MapsActivity.this);
         if (gpsTracker.canGetLocation()) {
@@ -59,7 +82,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToCurrentLocation();
+                fetchLocation();
             }
         });
     }
