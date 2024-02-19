@@ -67,6 +67,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override // all map related functionalities will be done here
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        LatLng mapOpenLatLng = new LatLng(19.076090, 72.877426);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(mapOpenLatLng));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mapOpenLatLng, 12f));
     }
 }
