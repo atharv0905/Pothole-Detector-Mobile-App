@@ -30,7 +30,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     Button currentLocationBtn;
-    Marker marker;
+
+    private Marker selectedMarker;
 
     // --------------------------------------------------------------------------------------------------------------------------
     // setting marking to current location
@@ -64,11 +65,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // creating marker object
             MarkerOptions newMarker = new MarkerOptions();
             newMarker.position(latLng);
-            marker = mMap.addMarker(newMarker);
-//            marker.position(latLng);
 
             // adding marker to map
-//            mMap.addMarker(marker);
+            mMap.addMarker(newMarker);
 
             // moving camera to desired latlng
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
@@ -101,16 +100,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onPlaceSelected(Place place) {
                 // Handle the selected place.
-//                Toast.makeText(MapsActivity.this, "Place: " + place.getName(), Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Place: " + place.getName(), Toast.LENGTH_LONG).show();
 
                 LatLng selectedLatLng = place.getLatLng();
                 if(selectedLatLng == null){
                     Toast.makeText(MapsActivity.this, "Lat Lng is null", Toast.LENGTH_LONG).show();
                 }
                 if (selectedLatLng != null) {
-                    MarkerOptions newMarker = new MarkerOptions();
-                    newMarker.position(selectedLatLng);
-                    marker = mMap.addMarker(newMarker);
+                    if (selectedMarker == null) {
+                        // If no marker exists, create a new one
+                        MarkerOptions newMarker = new MarkerOptions();
+                        newMarker.position(selectedLatLng);
+                        selectedMarker = mMap.addMarker(newMarker);
+                    } else {
+                        // If marker exists, move it to the new location
+                        selectedMarker.setPosition(selectedLatLng);
+                    }
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLatLng, 15));
                 }
             }
@@ -130,7 +135,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-//        marker = new Marker();
         // searching location
         searchLocation();
 
